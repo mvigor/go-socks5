@@ -2,12 +2,11 @@ package socks5
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"log"
 	"net"
 	"os"
-
-	"golang.org/x/net/context"
 )
 
 const (
@@ -55,6 +54,7 @@ type Config struct {
 type Server struct {
 	config      *Config
 	authMethods map[uint8]Authenticator
+	listener    net.Listener
 }
 
 // New creates a new Server and potentially returns an error
@@ -102,6 +102,7 @@ func (s *Server) ListenAndServe(network, addr string) error {
 	if err != nil {
 		return err
 	}
+	s.listener = l
 	return s.Serve(l)
 }
 
@@ -166,4 +167,8 @@ func (s *Server) ServeConn(conn net.Conn) error {
 	}
 
 	return nil
+}
+
+func (s *Server) Stop() {
+	s.listener.Close()
 }
